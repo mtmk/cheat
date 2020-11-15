@@ -16,3 +16,4 @@
 *.bz binary
 *.br binary
 *.gz binary
+_framework/ binary
