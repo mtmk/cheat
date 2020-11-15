@@ -1,5 +1,7 @@
 # Cheat Word Games
 
+https://mtmk.github.io/cheat/
+
 Finds English words based on a list of available letters.
 
 This was a little dotnet wasm experiment.
