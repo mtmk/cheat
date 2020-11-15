@@ -1,27 +1,44 @@
 ﻿@page "/"
+@inject IJSRuntime JSRuntime
 @using System.Text
 @using System.Text.RegularExpressions
 
-<h1>Cheat!</h1>
-
-Words with letters
-
-<input autocapitalize="off" autocomplete="off" autocorrect="off" @bind="_text"  />
-
-<button class="btn btn-primary" @onclick="Find">Find</button>
-
-<pre style="font-size: 24px">@_results</pre>
+<p>
+    <h1>Words with letters</h1>
+    <br/>
+    <form @onsubmit="Find">
+        <input autocapitalize="off" autocomplete="off" autocorrect="off" value="@_text" @oninput="OnInput" @ref="_firstInput"/>
+        <br/>
+        <br/>
+        <input type="submit" class="btn btn-primary" @onclick="Find" value="Find Words"/>
+    </form>
+    <br/>
+    <br/>
+    <pre>@_results</pre>
+</p>
 
 @code {
+    ElementReference _firstInput;
     string _results;
     string _text;
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("BlazorFocusElement", _firstInput);
+        }
+    }
 
+
+    private void OnInput(ChangeEventArgs e)
+    {
+        _text = e?.Value?.ToString()?.ToUpper();
+    }
+    
     private async Task Find()
     {
-        _text = _text.ToLower();
-        await UpdatePage();
-        
-        var text = _text;
+        var text = _text.ToLower();
         await Task.Run(async delegate
         {
             var dictionary = new Dictionary<int, HashSet<string>>();
@@ -37,12 +54,12 @@ Words with letters
                 if (re.IsMatch(word))
                 {
                     bool found = true;
-                    var hashSet = new HashSet<char>(text);
+                    var foundSet = new List<char>(text);
                     foreach (var c in word)
                     {
-                        if (hashSet.Contains(c))
+                        if (foundSet.Contains(c))
                         {
-                            hashSet.Remove(c);
+                            foundSet.Remove(c);
                         }
                         else
                         {
@@ -76,7 +93,7 @@ Words with letters
                 list.AppendLine($"{len}-LETTER");
                 foreach (var word in words.OrderBy(w => w))
                 {
-                    list.AppendLine($"  {word}");
+                    list.AppendLine($"  {word.ToUpper()}");
                 }
                 list.AppendLine();
             }
