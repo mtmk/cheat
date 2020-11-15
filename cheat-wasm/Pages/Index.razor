@@ -6,11 +6,11 @@
 
 Words with letters
 
-<input @bind="_text" />
+<input autocapitalize="off" autocomplete="off" autocorrect="off" @bind="_text"  />
 
 <button class="btn btn-primary" @onclick="Find">Find</button>
 
-<pre>@_results</pre>
+<pre style="font-size: 24px">@_results</pre>
 
 @code {
     string _results;
@@ -18,15 +18,17 @@ Words with letters
 
     private async Task Find()
     {
+        _text = _text.ToLower();
+        await UpdatePage();
+        
         var text = _text;
         await Task.Run(async delegate
         {
             var dictionary = new Dictionary<int, HashSet<string>>();
             
             _results = "thinking...";
-            StateHasChanged();
-            await Task.Delay(100);
-     
+            await UpdatePage();
+
             var count = 0;
             var tooMany = false;
             var re = new Regex($"^[{text}]+$", RegexOptions.Compiled);
@@ -84,4 +86,11 @@ Words with letters
             _results = list.ToString();
         });
     }
+
+    private async Task UpdatePage()
+    {
+        StateHasChanged();
+        await Task.Delay(100);
+    }
+
 }
