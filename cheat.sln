@@ -8,6 +8,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "readme", "readme", "{730CFFA2-C54A-4C49-B245-830DF1714CC8}"
 ProjectSection(SolutionItems) = preProject
 	README.md = README.md
+	clean.sh = clean.sh
+	build.sh = build.sh
 EndProjectSection
 EndProject
 Global

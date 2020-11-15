@@ -3,32 +3,39 @@
 @using System.Text.RegularExpressions
 
 <h1>Cheat!</h1>
+
+Words with letters
+
 <input @bind="_text" />
-<button class="btn btn-primary" @onclick="Dodo2">Find</button>
-<pre>@_result</pre>
+
+<button class="btn btn-primary" @onclick="Find">Find</button>
+
+<pre>@_results</pre>
 
 @code {
-    string _result = "";
-    string _text = "";
+    string _results;
+    string _text;
 
-    private async Task Dodo2()
+    private async Task Find()
     {
-        Console.WriteLine($"count={Program.Words.Count}");
-        Console.WriteLine($"text={_text}");
-
-        _result = "thinking...";
-        
-        _result = await Task.Run(delegate
+        var text = _text;
+        await Task.Run(async delegate
         {
+            var dictionary = new Dictionary<int, HashSet<string>>();
+            
+            _results = "thinking...";
+            StateHasChanged();
+            await Task.Delay(100);
+     
             var count = 0;
-            var list = new StringBuilder();
-            var re = new Regex($"^[{_text}]+$", RegexOptions.Compiled);
+            var tooMany = false;
+            var re = new Regex($"^[{text}]+$", RegexOptions.Compiled);
             foreach (var word in Program.Words)
             {
                 if (re.IsMatch(word))
                 {
                     bool found = true;
-                    var hashSet = new HashSet<char>(_text);
+                    var hashSet = new HashSet<char>(text);
                     foreach (var c in word)
                     {
                         if (hashSet.Contains(c))
@@ -44,18 +51,37 @@
                     if (found)
                     {
                         count++;
-                        list.AppendLine(word);
+                        var len = word.Length;
+
+                        if (!dictionary.TryGetValue(len, out var wordSet))
+                        {
+                            wordSet = dictionary[len] = new HashSet<string>();
+                        }
+                        wordSet.Add(word);
                     }
 
                     if (count > 5000)
                     {
-                        list.AppendLine("---TOO MANY MATCHES---");
+                        tooMany = true;
                         break;
                     }
                 }
             }
 
-            return list.ToString();
+            var list =  new StringBuilder();
+            foreach (var (len, words) in dictionary.OrderBy(kv => kv.Key))
+            {
+                list.AppendLine($"{len}-LETTER");
+                foreach (var word in words.OrderBy(w => w))
+                {
+                    list.AppendLine($"  {word}");
+                }
+                list.AppendLine();
+            }
+
+            if (tooMany) list.AppendLine("--- Too many results ---");
+            
+            _results = list.ToString();
         });
     }
 }
