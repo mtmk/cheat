@@ -1,0 +1,61 @@
+﻿@page "/"
+@using System.Text
+@using System.Text.RegularExpressions
+
+<h1>Cheat!</h1>
+<input @bind="_text" />
+<button class="btn btn-primary" @onclick="Dodo2">Find</button>
+<pre>@_result</pre>
+
+@code {
+    string _result = "";
+    string _text = "";
+
+    private async Task Dodo2()
+    {
+        Console.WriteLine($"count={Program.Words.Count}");
+        Console.WriteLine($"text={_text}");
+
+        _result = "thinking...";
+        
+        _result = await Task.Run(delegate
+        {
+            var count = 0;
+            var list = new StringBuilder();
+            var re = new Regex($"^[{_text}]+$", RegexOptions.Compiled);
+            foreach (var word in Program.Words)
+            {
+                if (re.IsMatch(word))
+                {
+                    bool found = true;
+                    var hashSet = new HashSet<char>(_text);
+                    foreach (var c in word)
+                    {
+                        if (hashSet.Contains(c))
+                        {
+                            hashSet.Remove(c);
+                        }
+                        else
+                        {
+                            found = false;
+                            break;
+                        }
+                    }
+                    if (found)
+                    {
+                        count++;
+                        list.AppendLine(word);
+                    }
+
+                    if (count > 5000)
+                    {
+                        list.AppendLine("---TOO MANY MATCHES---");
+                        break;
+                    }
+                }
+            }
+
+            return list.ToString();
+        });
+    }
+}
